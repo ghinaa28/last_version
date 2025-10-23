@@ -59,30 +59,22 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
             $department = $conn->real_escape_string($_POST['department']);
             $phone = $conn->real_escape_string($_POST['phone']);
+            $student_id_number = $conn->real_escape_string($_POST['student_id_number']);
+            $academic_year = $conn->real_escape_string($_POST['academic_year']);
+            $gpa = !empty($_POST['gpa']) ? $conn->real_escape_string($_POST['gpa']) : null;
+            $expected_graduation = !empty($_POST['expected_graduation']) ? $conn->real_escape_string($_POST['expected_graduation']) : null;
             $cv_path = uploadFile($_FILES['cv'], "uploads/students/cv");
 
-            // Use prepared statement for better security and reliability
-            $sql = "INSERT INTO students (first_name, last_name, university, email, password, department, phone, cv_path, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+            $sql = "INSERT INTO students (first_name, last_name, university, email, password, department, phone, student_id_number, academic_year, gpa, expected_graduation, cv_path, created_at)
+                    VALUES ('$first_name', '$last_name', '$university', '$email', '$password', '$department', '$phone', '$student_id_number', '$academic_year', '$gpa', '$expected_graduation', '$cv_path', NOW())";
 
-            $stmt = $conn->prepare($sql);
-            if($stmt) {
-                $stmt->bind_param("ssssssss", $first_name, $last_name, $university, $email, $password, $department, $phone, $cv_path);
-                
-                if($stmt->execute()) {
-                    session_start();
-                    $_SESSION['student_id'] = $conn->insert_id;
-                    $_SESSION['student_name'] = $full_name;
-                    $stmt->close();
-                    header("Location: student_dashboard.php");
-                    exit();
-                } else {
-                    $error = "Error creating student account: " . $stmt->error;
-                }
-                $stmt->close();
-            } else {
-                $error = "Error preparing statement: " . $conn->error;
-            }
+            if($conn->query($sql)) {
+                session_start();
+                $_SESSION['student_id'] = $conn->insert_id;
+                $_SESSION['student_name'] = $full_name;
+                header("Location: student_dashboard.php");
+                exit();
+            } else $error = "Error: " . $conn->error;
         }
 
         // --- COMPANY INSERT ---
@@ -101,20 +93,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 // Insert company (without address fields since we're using locations now)
                 $sql = "INSERT INTO companies (company_name, email, password, phone, industry, website, logo_path, status, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                        VALUES ('$company', '$email', '$password', '$phone', '$industry', '$website', '$logo', '$status', NOW())";
 
-                $stmt = $conn->prepare($sql);
-                if(!$stmt) {
-                    throw new Exception("Error preparing company statement: " . $conn->error);
+                if(!$conn->query($sql)) {
+                    throw new Exception("Error creating company: " . $conn->error);
                 }
-                
-                $stmt->bind_param("ssssssss", $company, $email, $password, $phone, $industry, $website, $logo, $status);
-                
-                if(!$stmt->execute()) {
-                    throw new Exception("Error creating company: " . $stmt->error);
-                }
-                
-                $stmt->close();
 
                 $company_id = $conn->insert_id;
 
@@ -129,20 +112,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $location_email = $conn->real_escape_string($_POST['location_email']);
 
                 $location_sql = "INSERT INTO company_locations (company_id, location_name, location_type, address, city, country, postal_code, phone, email, is_primary, status, created_at)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE, 'active', NOW())";
+                                VALUES ('$company_id', '$location_name', '$location_type', '$address', '$city', '$country', '$postal_code', '$location_phone', '$location_email', TRUE, 'active', NOW())";
 
-                $location_stmt = $conn->prepare($location_sql);
-                if(!$location_stmt) {
-                    throw new Exception("Error preparing location statement: " . $conn->error);
+                if(!$conn->query($location_sql)) {
+                    throw new Exception("Error creating primary location: " . $conn->error);
                 }
-                
-                $location_stmt->bind_param("issssssss", $company_id, $location_name, $location_type, $address, $city, $country, $postal_code, $location_phone, $location_email);
-                
-                if(!$location_stmt->execute()) {
-                    throw new Exception("Error creating primary location: " . $location_stmt->error);
-                }
-                
-                $location_stmt->close();
 
                 // Commit transaction
                 $conn->commit();
@@ -171,20 +145,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql = "INSERT INTO instructors 
                     (first_name, last_name, email, password, phone, department, university_name, photo_path, upload_cv, bio, status, created_at) 
                     VALUES 
-                    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())";
+                    ('$first_name', '$last_name', '$email', '$password', '$phone', '$department', '$university', '$photo', '$cv', '$bio', 'pending', NOW())";
 
-            $stmt = $conn->prepare($sql);
-            if($stmt) {
-                $stmt->bind_param("ssssssssss", $first_name, $last_name, $email, $password, $phone, $department, $university, $photo, $cv, $bio);
-                
-                if($stmt->execute()) {
-                    $success = "Your instructor account has been created successfully!<br>Please note your account is pending admin approval.";
-                } else {
-                    $error = "Error creating instructor account: " . $stmt->error;
-                }
-                $stmt->close();
+            if($conn->query($sql)) {
+                $success = "Your instructor account has been created successfully!<br>Please note your account is pending admin approval.";
             } else {
-                $error = "Error preparing instructor statement: " . $conn->error;
+                $error = "Error: " . $conn->error;
             }
         }
 
@@ -192,8 +158,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 } // end POST
 
-// Don't close connection here as we need it for the HTML output
-// $conn->close();
+$conn->close();
 ?>
 
 
@@ -927,6 +892,39 @@ body::before {
             </div>
 
             <div class="form-group">
+              <label class="form-label">Student ID Number</label>
+              <input type="text" name="student_id_number" class="form-input" placeholder="Enter your student ID number" required>
+              <i class="fas fa-id-card input-icon"></i>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Academic Year</label>
+              <select name="academic_year" class="form-input" required>
+                <option value="">Select your academic year</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+                <option value="5th Year">5th Year</option>
+                <option value="Graduate">Graduate</option>
+                <option value="Postgraduate">Postgraduate</option>
+              </select>
+              <i class="fas fa-calendar input-icon"></i>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">GPA (Optional)</label>
+              <input type="number" name="gpa" class="form-input" placeholder="Enter your GPA (0.0-4.0)" step="0.01" min="0" max="4">
+              <i class="fas fa-chart-line input-icon"></i>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Expected Graduation Date</label>
+              <input type="month" name="expected_graduation" class="form-input" placeholder="Select expected graduation month">
+              <i class="fas fa-graduation-cap input-icon"></i>
+            </div>
+
+            <div class="form-group">
               <label class="form-label">Upload CV (PDF)</label>
               <div class="file-input-wrapper">
                 <input type="file" name="cv" class="file-input" accept=".pdf" required>
@@ -1277,8 +1275,3 @@ function goBack() {
 
 </body>
 </html>
-
-<?php
-// Close connection at the end
-$conn->close();
-?>

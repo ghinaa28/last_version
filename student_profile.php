@@ -21,45 +21,7 @@ if (!$student) {
     exit();
 }
 
-// Handle form submission for profile updates
-$success_message = "";
-$error_message = "";
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-    $first_name = $conn->real_escape_string($_POST['first_name']);
-    $last_name = $conn->real_escape_string($_POST['last_name']);
-    $university = $conn->real_escape_string($_POST['university']);
-    $department = $conn->real_escape_string($_POST['department']);
-    $phone = $conn->real_escape_string($_POST['phone']);
-    
-    // Validate required fields
-    if (empty($first_name) || empty($last_name) || empty($university) || empty($department)) {
-        $error_message = "Please fill in all required fields.";
-    } else {
-        // Update student profile
-        $update_sql = "UPDATE students SET 
-                      first_name = ?, 
-                      last_name = ?, 
-                      university = ?, 
-                      department = ?, 
-                      phone = ? 
-                      WHERE student_id = ?";
-        
-        $stmt = $conn->prepare($update_sql);
-        $stmt->bind_param("sssssi", $first_name, $last_name, $university, $department, $phone, $student_id);
-        
-        if ($stmt->execute()) {
-            $success_message = "Profile updated successfully!";
-            // Refresh student data
-            $stmt = $conn->prepare("SELECT * FROM students WHERE student_id = ?");
-            $stmt->bind_param("i", $student_id);
-            $stmt->execute();
-            $student = $stmt->get_result()->fetch_assoc();
-        } else {
-            $error_message = "Error updating profile: " . $conn->error;
-        }
-    }
-}
+// Profile is read-only - no editing functionality
 
 // Get application statistics
 $stats_sql = "SELECT 
@@ -73,6 +35,29 @@ $stmt = $conn->prepare($stats_sql);
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
 $stats = $stmt->get_result()->fetch_assoc();
+
+// Get recent applications with internship details
+$applications_sql = "SELECT 
+    ia.application_id,
+    ia.status,
+    ia.application_date,
+    ia.cover_letter,
+    i.title as internship_title,
+    c.company_name,
+    i.location,
+    i.duration,
+    i.start_date
+    FROM internship_applications ia
+    LEFT JOIN internships i ON ia.internship_id = i.internship_id
+    LEFT JOIN companies c ON i.company_id = c.company_id
+    WHERE ia.student_id = ?
+    ORDER BY ia.application_date DESC
+    LIMIT 5";
+
+$stmt = $conn->prepare($applications_sql);
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+$recent_applications = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -395,119 +380,8 @@ $stats = $stmt->get_result()->fetch_assoc();
             }
         }
 
-        /* Form Styles */
-        .form-container {
-            background: var(--bg-primary);
-            border-radius: var(--radius-xl);
-            padding: 2rem;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-light);
-            margin-bottom: 2rem;
-        }
 
-        .form-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border-light);
-        }
 
-        .form-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--ink);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--ink);
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .form-input {
-            padding: 0.875rem 1rem;
-            border: 2px solid var(--border-light);
-            border-radius: var(--radius-lg);
-            font-size: 1rem;
-            transition: var(--transition);
-            background: var(--bg-primary);
-            color: var(--ink);
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--brand);
-            box-shadow: 0 0 0 3px rgba(14, 165, 168, 0.1);
-        }
-
-        .form-input:disabled {
-            background: var(--bg-secondary);
-            color: var(--muted);
-            cursor: not-allowed;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-light);
-        }
-
-        .btn-edit {
-            background: var(--brand);
-            color: var(--text-white);
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--radius-lg);
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-edit:hover {
-            background: var(--brand-2);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-cancel {
-            background: var(--bg-secondary);
-            color: var(--muted);
-            border: 2px solid var(--border-light);
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--radius-lg);
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .btn-cancel:hover {
-            background: var(--border-light);
-            color: var(--ink);
-        }
 
         .message {
             padding: 1rem;
@@ -531,17 +405,7 @@ $stats = $stmt->get_result()->fetch_assoc();
             color: #dc2626;
         }
 
-        .edit-mode .info-item {
-            display: none;
-        }
 
-        .edit-mode .form-container {
-            display: block;
-        }
-
-        .form-container {
-            display: none;
-        }
 
         .section-header {
             display: flex;
@@ -552,6 +416,108 @@ $stats = $stmt->get_result()->fetch_assoc();
 
         .section-header .section-title {
             margin-bottom: 0;
+        }
+
+        .status-badge.status-pending {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .status-badge.status-accepted {
+            background: var(--success);
+            color: white;
+        }
+
+        .status-badge.status-rejected {
+            background: #ef4444;
+            color: white;
+        }
+
+        .applications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .application-item {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .application-item:hover {
+            border-color: var(--brand);
+            box-shadow: 0 2px 8px rgba(14, 165, 168, 0.1);
+        }
+
+        .application-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .application-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin: 0;
+        }
+
+        .application-details {
+            color: var(--muted);
+        }
+
+        .company-name {
+            font-weight: 500;
+            color: var(--ink);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .application-meta {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .application-meta i {
+            margin-right: 0.25rem;
+        }
+
+        .separator {
+            margin: 0 0.5rem;
+        }
+
+        .section-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .info-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .info-item.full-width .info-value {
+            white-space: pre-line;
+            line-height: 1.6;
         }
     </style>
 </head>
@@ -596,76 +562,8 @@ $stats = $stmt->get_result()->fetch_assoc();
 
             <div class="main-content">
                 <!-- Success/Error Messages -->
-                <?php if ($success_message): ?>
-                    <div class="message message-success">
-                        <i class="fas fa-check-circle"></i>
-                        <?php echo htmlspecialchars($success_message); ?>
-                    </div>
-                <?php endif; ?>
 
-                <?php if ($error_message): ?>
-                    <div class="message message-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <?php echo htmlspecialchars($error_message); ?>
-                    </div>
-                <?php endif; ?>
 
-                <!-- Edit Profile Form -->
-                <div class="form-container" id="editForm">
-                    <div class="form-header">
-                        <h3 class="form-title">
-                            <i class="fas fa-edit"></i>
-                            Edit Personal Information
-                        </h3>
-                    </div>
-                    <form method="POST" action="">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">First Name *</label>
-                                <input type="text" name="first_name" class="form-input" 
-                                       value="<?php echo htmlspecialchars($student['first_name']); ?>" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Last Name *</label>
-                                <input type="text" name="last_name" class="form-input" 
-                                       value="<?php echo htmlspecialchars($student['last_name']); ?>" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">University *</label>
-                                <input type="text" name="university" class="form-input" 
-                                       value="<?php echo htmlspecialchars($student['university']); ?>" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Department *</label>
-                                <input type="text" name="department" class="form-input" 
-                                       value="<?php echo htmlspecialchars($student['department']); ?>" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Phone Number</label>
-                                <input type="text" name="phone" class="form-input" 
-                                       value="<?php echo htmlspecialchars($student['phone']); ?>">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Email Address</label>
-                                <input type="email" class="form-input" 
-                                       value="<?php echo htmlspecialchars($student['email']); ?>" disabled>
-                                <small style="color: var(--muted); font-size: 0.8rem; margin-top: 0.25rem;">
-                                    Email cannot be changed. Contact support if needed.
-                                </small>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" class="btn-cancel" onclick="cancelEdit()">
-                                <i class="fas fa-times"></i>
-                                Cancel
-                            </button>
-                            <button type="submit" name="update_profile" class="btn-edit">
-                                <i class="fas fa-save"></i>
-                                Save Changes
-                            </button>
-                        </div>
-                    </form>
-                </div>
 
                 <div class="info-section">
                     <div class="section-header">
@@ -673,10 +571,10 @@ $stats = $stmt->get_result()->fetch_assoc();
                             <i class="fas fa-user"></i>
                             Personal Information
                         </h3>
-                        <button class="btn-edit" onclick="editProfile()">
+                        <a href="student_update_profile.php" class="btn btn-primary">
                             <i class="fas fa-edit"></i>
-                            Edit Profile
-                        </button>
+                            Update Profile
+                        </a>
                     </div>
                     <div class="info-grid">
                         <div class="info-item">
@@ -718,7 +616,9 @@ $stats = $stmt->get_result()->fetch_assoc();
                         </div>
                         <div class="info-item">
                             <span class="info-label">Student ID</span>
-                            <span class="info-value"><?php echo htmlspecialchars($student['student_id_number']); ?></span>
+                            <span class="info-value <?php echo empty($student['student_id_number']) ? 'empty' : ''; ?>">
+                                <?php echo !empty($student['student_id_number']) ? htmlspecialchars($student['student_id_number']) : 'Not provided'; ?>
+                            </span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Academic Year</span>
@@ -736,6 +636,33 @@ $stats = $stmt->get_result()->fetch_assoc();
                             <span class="info-label">Expected Graduation</span>
                             <span class="info-value <?php echo empty($student['expected_graduation']) ? 'empty' : ''; ?>">
                                 <?php echo !empty($student['expected_graduation']) ? date('M Y', strtotime($student['expected_graduation'])) : 'Not specified'; ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-lightbulb"></i>
+                        Training Interests & Skills
+                    </h3>
+                    <div class="info-grid">
+                        <div class="info-item full-width">
+                            <span class="info-label">Training Interests</span>
+                            <span class="info-value <?php echo empty($student['training_interests']) ? 'empty' : ''; ?>">
+                                <?php echo !empty($student['training_interests']) ? nl2br(htmlspecialchars($student['training_interests'])) : 'Not specified'; ?>
+                            </span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Preferred Fields</span>
+                            <span class="info-value <?php echo empty($student['preferred_fields']) ? 'empty' : ''; ?>">
+                                <?php echo !empty($student['preferred_fields']) ? nl2br(htmlspecialchars($student['preferred_fields'])) : 'Not specified'; ?>
+                            </span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Skills</span>
+                            <span class="info-value <?php echo empty($student['skills']) ? 'empty' : ''; ?>">
+                                <?php echo !empty($student['skills']) ? nl2br(htmlspecialchars($student['skills'])) : 'Not specified'; ?>
                             </span>
                         </div>
                     </div>
@@ -775,6 +702,50 @@ $stats = $stmt->get_result()->fetch_assoc();
 
                 <div class="info-section">
                     <h3 class="section-title">
+                        <i class="fas fa-briefcase"></i>
+                        Recent Applications
+                    </h3>
+                    <?php if (!empty($recent_applications)): ?>
+                        <div class="applications-list">
+                            <?php foreach ($recent_applications as $app): ?>
+                                <div class="application-item">
+                                    <div class="application-header">
+                                        <h4 class="application-title"><?php echo htmlspecialchars($app['internship_title']); ?></h4>
+                                        <span class="status-badge status-<?php echo strtolower($app['status']); ?>">
+                                            <?php echo ucfirst($app['status']); ?>
+                                        </span>
+                                    </div>
+                                    <div class="application-details">
+                                        <p class="company-name"><?php echo htmlspecialchars($app['company_name']); ?></p>
+                                        <p class="application-meta">
+                                            <i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($app['location']); ?>
+                                            <span class="separator">•</span>
+                                            <i class="fas fa-calendar"></i> Applied <?php echo date('M d, Y', strtotime($app['application_date'])); ?>
+                                        </p>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="section-footer">
+                            <a href="my_applications.php" class="btn btn-secondary">
+                                <i class="fas fa-list"></i>
+                                View All Applications
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <i class="fas fa-briefcase"></i>
+                            <p>No applications yet</p>
+                            <a href="browse_internships.php" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                                Browse Internships
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="info-section">
+                    <h3 class="section-title">
                         <i class="fas fa-chart-line"></i>
                         Application Statistics
                     </h3>
@@ -807,53 +778,6 @@ $stats = $stmt->get_result()->fetch_assoc();
         </div>
     </div>
 
-    <script>
-        function editProfile() {
-            document.body.classList.add('edit-mode');
-            document.getElementById('editForm').style.display = 'block';
-            // Scroll to form
-            document.getElementById('editForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        function cancelEdit() {
-            document.body.classList.remove('edit-mode');
-            document.getElementById('editForm').style.display = 'none';
-        }
-
-        // Auto-hide success messages after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const successMessage = document.querySelector('.message-success');
-            if (successMessage) {
-                setTimeout(() => {
-                    successMessage.style.opacity = '0';
-                    setTimeout(() => {
-                        successMessage.remove();
-                    }, 300);
-                }, 5000);
-            }
-        });
-
-        // Form validation
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const firstName = document.querySelector('input[name="first_name"]').value.trim();
-            const lastName = document.querySelector('input[name="last_name"]').value.trim();
-            const university = document.querySelector('input[name="university"]').value.trim();
-            const department = document.querySelector('input[name="department"]').value.trim();
-
-            if (!firstName || !lastName || !university || !department) {
-                e.preventDefault();
-                alert('Please fill in all required fields.');
-                return false;
-            }
-
-            // Basic name validation
-            if (firstName.length < 2 || lastName.length < 2) {
-                e.preventDefault();
-                alert('First name and last name must be at least 2 characters long.');
-                return false;
-            }
-        });
-    </script>
 </body>
 </html>
 

@@ -2,13 +2,13 @@
 session_start();
 require_once 'connection.php';
 
-// Check if user is logged in and is a company
-if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'company') {
+// Check if user is logged in as company
+if (!isset($_SESSION['company_id'])) {
     header("Location: login.php");
     exit();
 }
 
-$company_id = $_SESSION['user_id'];
+$company_id = $_SESSION['company_id'];
 $success = '';
 $error = '';
 
@@ -23,13 +23,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $standard_price = floatval($_POST['standard_price']);
                 $unit_type = $conn->real_escape_string($_POST['unit_type']);
                 
-                $sql = "INSERT INTO equipment_items (category_id, item_name, item_description, standard_price, unit_type, is_custom, company_id) 
+                $sql = "INSERT INTO equipment_items (category_id, item_name, description, standard_price, unit_type, is_custom, company_id) 
                         VALUES ('$category_id', '$item_name', '$item_description', '$standard_price', '$unit_type', TRUE, '$company_id')";
                 
                 if ($conn->query($sql)) {
                     $success = "Custom equipment added successfully!";
                 } else {
                     $error = "Error adding custom equipment: " . $conn->error;
+                }
+                break;
+                
+            case 'edit_equipment':
+                $item_id = intval($_POST['item_id']);
+                $category_id = $conn->real_escape_string($_POST['category_id']);
+                $item_name = $conn->real_escape_string($_POST['item_name']);
+                $item_description = $conn->real_escape_string($_POST['item_description']);
+                $standard_price = floatval($_POST['standard_price']);
+                $unit_type = $conn->real_escape_string($_POST['unit_type']);
+                
+                $sql = "UPDATE equipment_items 
+                        SET category_id = '$category_id', item_name = '$item_name', description = '$item_description', 
+                            standard_price = '$standard_price', unit_type = '$unit_type'
+                        WHERE item_id = '$item_id' AND company_id = '$company_id' AND is_custom = TRUE";
+                
+                if ($conn->query($sql)) {
+                    $success = "Equipment updated successfully!";
+                } else {
+                    $error = "Error updating equipment: " . $conn->error;
+                }
+                break;
+                
+            case 'delete_equipment':
+                $item_id = intval($_POST['item_id']);
+                
+                $sql = "UPDATE equipment_items 
+                        SET status = 'inactive' 
+                        WHERE item_id = '$item_id' AND company_id = '$company_id' AND is_custom = TRUE";
+                
+                if ($conn->query($sql)) {
+                    $success = "Equipment deleted successfully!";
+                } else {
+                    $error = "Error deleting equipment: " . $conn->error;
                 }
                 break;
                 
@@ -83,6 +117,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = "Error creating package: " . $e->getMessage();
                 }
                 break;
+                
+            case 'edit_package':
+                $package_id = intval($_POST['package_id']);
+                $package_name = $conn->real_escape_string($_POST['package_name']);
+                $package_description = $conn->real_escape_string($_POST['package_description']);
+                $discount_percentage = floatval($_POST['discount_percentage']);
+                $selected_items = $_POST['selected_items'] ?? [];
+                
+                $conn->begin_transaction();
+                try {
+                    // Update package details
+                    $package_sql = "UPDATE equipment_packages 
+                                   SET package_name = '$package_name', package_description = '$package_description', 
+                                       discount_percentage = '$discount_percentage'
+                                   WHERE package_id = '$package_id' AND company_id = '$company_id'";
+                    
+                    if (!$conn->query($package_sql)) {
+                        throw new Exception("Error updating package: " . $conn->error);
+                    }
+                    
+                    // Delete existing package items
+                    $delete_items_sql = "DELETE FROM package_items WHERE package_id = '$package_id'";
+                    if (!$conn->query($delete_items_sql)) {
+                        throw new Exception("Error clearing package items: " . $conn->error);
+                    }
+                    
+                    // Insert new package items
+                    foreach ($selected_items as $item_id => $data) {
+                        $quantity = intval($data['quantity']);
+                        $custom_price = floatval($data['custom_price']);
+                        
+                        $item_sql = "INSERT INTO package_items (package_id, item_id, quantity, custom_price) 
+                                    VALUES ('$package_id', '$item_id', '$quantity', '$custom_price')";
+                        
+                        if (!$conn->query($item_sql)) {
+                            throw new Exception("Error adding items to package: " . $conn->error);
+                        }
+                    }
+                    
+                    $conn->commit();
+                    $success = "Equipment package updated successfully!";
+                } catch (Exception $e) {
+                    $conn->rollback();
+                    $error = "Error updating package: " . $e->getMessage();
+                }
+                break;
+                
+            case 'delete_package':
+                $package_id = intval($_POST['package_id']);
+                
+                $conn->begin_transaction();
+                try {
+                    // Delete package items first
+                    $delete_items_sql = "DELETE FROM package_items WHERE package_id = '$package_id'";
+                    if (!$conn->query($delete_items_sql)) {
+                        throw new Exception("Error deleting package items: " . $conn->error);
+                    }
+                    
+                    // Delete package
+                    $delete_package_sql = "DELETE FROM equipment_packages 
+                                          WHERE package_id = '$package_id' AND company_id = '$company_id'";
+                    if (!$conn->query($delete_package_sql)) {
+                        throw new Exception("Error deleting package: " . $conn->error);
+                    }
+                    
+                    $conn->commit();
+                    $success = "Equipment package deleted successfully!";
+                } catch (Exception $e) {
+                    $conn->rollback();
+                    $error = "Error deleting package: " . $e->getMessage();
+                }
+                break;
         }
     }
 }
@@ -119,10 +225,15 @@ $custom_sql = "SELECT ei.*, ec.category_name, ec.icon_class
                ORDER BY ec.category_name, ei.item_name";
 $custom_result = $conn->query($custom_sql);
 $custom_items = [];
-if ($custom_result && $custom_result->num_rows > 0) {
-    while ($row = $custom_result->fetch_assoc()) {
-        $custom_items[] = $row;
+if ($custom_result) {
+    if ($custom_result->num_rows > 0) {
+        while ($row = $custom_result->fetch_assoc()) {
+            $custom_items[] = $row;
+        }
     }
+} else {
+    // Log error for debugging
+    error_log("Custom equipment query error: " . $conn->error);
 }
 
 // Get equipment packages
@@ -149,8 +260,33 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Equipment - GradConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --brand: #0ea5a8;
+            --brand-2: #22d3ee;
+            --ink: #0b1f3a;
+            --muted: #475569;
+            --panel: #ffffff;
+            --bg-primary: #f6f8fb;
+            --bg-secondary: #f1f5f9;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --text-white: #ffffff;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --transition: all 0.2s ease;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -158,10 +294,11 @@ $conn->close();
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
             min-height: 100vh;
-            color: #333;
+            color: var(--ink);
+            line-height: 1.6;
         }
 
         .container {
@@ -171,58 +308,69 @@ $conn->close();
         }
 
         .header {
-            background: white;
-            border-radius: 15px;
+            background: var(--panel);
+            border-radius: var(--radius-xl);
             padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
         }
 
         .header h1 {
-            color: #4a5568;
+            color: var(--ink);
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             gap: 1rem;
+            font-size: 2rem;
+            font-weight: 800;
         }
 
         .header p {
-            color: #718096;
+            color: var(--muted);
             font-size: 1.1rem;
         }
 
         .tabs {
             display: flex;
-            background: white;
-            border-radius: 15px;
+            background: var(--panel);
+            border-radius: var(--radius-lg);
             padding: 0.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
         }
 
         .tab {
             flex: 1;
             padding: 1rem 2rem;
             text-align: center;
-            border-radius: 10px;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             font-weight: 600;
-            color: #718096;
+            color: var(--muted);
         }
 
         .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--brand);
+            color: var(--text-white);
             transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--bg-secondary);
+            color: var(--ink);
         }
 
         .tab-content {
             display: none;
-            background: white;
-            border-radius: 15px;
+            background: var(--panel);
+            border-radius: var(--radius-xl);
             padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
         }
 
         .tab-content.active {
@@ -237,26 +385,29 @@ $conn->close();
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 600;
-            color: #4a5568;
+            color: var(--ink);
         }
 
         .form-label.required::after {
             content: " *";
-            color: #e53e3e;
+            color: var(--error);
         }
 
         .form-input, .form-select, .form-textarea {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-lg);
             font-size: 1rem;
-            transition: border-color 0.3s ease;
+            transition: var(--transition);
+            background: var(--bg-primary);
+            color: var(--ink);
         }
 
         .form-input:focus, .form-select:focus, .form-textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(14, 165, 168, 0.1);
         }
 
         .form-textarea {
@@ -265,13 +416,13 @@ $conn->close();
         }
 
         .btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.875rem 1.5rem;
             border: none;
-            border-radius: 8px;
+            border-radius: var(--radius-lg);
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -279,31 +430,47 @@ $conn->close();
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--brand);
+            color: var(--text-white);
         }
 
         .btn-primary:hover {
+            background: var(--brand-2);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: var(--shadow-lg);
         }
 
         .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
+            background: var(--bg-secondary);
+            color: var(--muted);
+            border: 2px solid var(--border);
         }
 
         .btn-secondary:hover {
-            background: #cbd5e0;
+            background: var(--border);
+            color: var(--ink);
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: var(--text-white);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .btn-success {
-            background: #48bb78;
-            color: white;
+            background: var(--success);
+            color: var(--text-white);
         }
 
         .btn-success:hover {
-            background: #38a169;
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .equipment-grid {
@@ -314,17 +481,18 @@ $conn->close();
         }
 
         .equipment-card {
-            background: #f7fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            background: var(--panel);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-xl);
             padding: 1.5rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
         }
 
         .equipment-card:hover {
-            border-color: #667eea;
+            border-color: var(--brand);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-md);
         }
 
         .equipment-header {
@@ -332,62 +500,124 @@ $conn->close();
             align-items: center;
             gap: 1rem;
             margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .equipment-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: auto;
+        }
+
+        .btn-icon {
+            width: 2rem;
+            height: 2rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+        .edit-btn {
+            background: var(--brand);
+            color: var(--text-white);
+        }
+
+        .edit-btn:hover {
+            background: #0d8a8d;
+        }
+
+        .delete-btn {
+            background: var(--error);
+            color: var(--text-white);
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
         }
 
         .equipment-icon {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
+            background: var(--brand);
+            border-radius: var(--radius-lg);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: var(--text-white);
             font-size: 1.5rem;
         }
 
         .equipment-info h3 {
-            color: #2d3748;
+            color: var(--ink);
             margin-bottom: 0.25rem;
         }
 
         .equipment-category {
-            color: #718096;
+            color: var(--muted);
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .custom-badge {
+            background: var(--brand);
+            color: var(--text-white);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
         }
 
         .equipment-price {
             font-size: 1.25rem;
             font-weight: 700;
-            color: #48bb78;
+            color: var(--success);
             margin-bottom: 0.5rem;
         }
 
         .equipment-description {
-            color: #4a5568;
+            color: var(--ink);
             font-size: 0.9rem;
             line-height: 1.5;
         }
 
         .package-card {
-            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-xl);
             padding: 1.5rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
         }
 
         .package-card:hover {
-            border-color: #48bb78;
+            border-color: var(--success);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-md);
         }
 
         .package-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
+        }
+
+        .package-info-section {
+            flex: 1;
+        }
+
+        .package-actions {
+            display: flex;
+            gap: 0.5rem;
         }
 
         .package-name {
@@ -426,17 +656,6 @@ $conn->close();
             gap: 0.5rem;
         }
 
-        .alert-success {
-            background: #f0fff4;
-            border: 1px solid #9ae6b4;
-            color: #22543d;
-        }
-
-        .alert-error {
-            background: #fed7d7;
-            border: 1px solid #feb2b2;
-            color: #742a2a;
-        }
 
         .form-row {
             display: grid;
@@ -524,6 +743,60 @@ $conn->close();
             .equipment-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .tabs {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .tab {
+                padding: 0.75rem 1rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Success and Error Messages */
+        .alert {
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #059669;
+        }
+        
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #dc2626;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--muted);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 0.5rem;
+            color: var(--ink);
         }
     </style>
 </head>
@@ -569,17 +842,33 @@ $conn->close();
         <!-- Equipment Library Tab -->
         <div id="equipment" class="tab-content active">
             <h2>Equipment Library</h2>
-            <p>Browse and manage predefined equipment items</p>
+            <p>Browse and manage all available equipment items</p>
             
-            <?php if (empty($predefined_items)): ?>
+            <?php 
+            // Combine predefined and custom equipment
+            $all_equipment = array_merge($predefined_items, $custom_items);
+            
+            // Debug information (remove in production)
+            if (isset($_GET['debug'])) {
+                echo "<div style='background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px;'>";
+                echo "<strong>Debug Info:</strong><br>";
+                echo "Company ID: " . htmlspecialchars($company_id) . "<br>";
+                echo "Predefined items: " . count($predefined_items) . "<br>";
+                echo "Custom items: " . count($custom_items) . "<br>";
+                echo "Total items: " . count($all_equipment) . "<br>";
+                echo "</div>";
+            }
+            ?>
+            
+            <?php if (empty($all_equipment)): ?>
                 <div class="empty-state">
                     <i class="fas fa-tools"></i>
                     <h3>No Equipment Found</h3>
-                    <p>No predefined equipment items are available at the moment.</p>
+                    <p>No equipment items are available at the moment.</p>
                 </div>
             <?php else: ?>
                 <div class="equipment-grid">
-                    <?php foreach ($predefined_items as $item): ?>
+                    <?php foreach ($all_equipment as $item): ?>
                         <div class="equipment-card">
                             <div class="equipment-header">
                                 <div class="equipment-icon">
@@ -587,15 +876,30 @@ $conn->close();
                                 </div>
                                 <div class="equipment-info">
                                     <h3><?php echo htmlspecialchars($item['item_name']); ?></h3>
-                                    <div class="equipment-category"><?php echo htmlspecialchars($item['category_name']); ?></div>
+                                    <div class="equipment-category">
+                                        <?php echo htmlspecialchars($item['category_name']); ?>
+                                        <?php if ($item['is_custom']): ?>
+                                            <span class="custom-badge">Custom</span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
+                                <?php if ($item['is_custom']): ?>
+                                    <div class="equipment-actions">
+                                        <button class="btn-icon edit-btn" onclick="editEquipment(<?php echo $item['item_id']; ?>)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon delete-btn" onclick="deleteEquipment(<?php echo $item['item_id']; ?>, '<?php echo htmlspecialchars($item['item_name']); ?>')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             <div class="equipment-price">
                                 $<?php echo number_format($item['standard_price'], 2); ?>
                                 <span style="font-size: 0.8rem; color: #718096;">per <?php echo str_replace('_', ' ', $item['unit_type']); ?></span>
                             </div>
                             <div class="equipment-description">
-                                <?php echo htmlspecialchars($item['item_description']); ?>
+                                <?php echo htmlspecialchars($item['description'] ?? 'No description available'); ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -677,8 +981,20 @@ $conn->close();
                     <?php foreach ($packages as $package): ?>
                         <div class="package-card">
                             <div class="package-header">
-                                <div class="package-name"><?php echo htmlspecialchars($package['package_name']); ?></div>
-                                <div class="package-type"><?php echo ucfirst($package['package_type']); ?></div>
+                                <div class="package-info-section">
+                                    <div class="package-name"><?php echo htmlspecialchars($package['package_name']); ?></div>
+                                    <div class="package-type"><?php echo ucfirst($package['package_type']); ?></div>
+                                </div>
+                                <?php if ($package['package_type'] === 'custom'): ?>
+                                    <div class="package-actions">
+                                        <button class="btn-icon edit-btn" onclick="editPackage(<?php echo $package['package_id']; ?>)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon delete-btn" onclick="deletePackage(<?php echo $package['package_id']; ?>, '<?php echo htmlspecialchars($package['package_name']); ?>')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             <div class="package-price">
                                 $<?php echo number_format($package['total_price'], 2); ?>
@@ -789,6 +1105,73 @@ $conn->close();
                 itemDetails.style.display = 'none';
             }
         }
+
+        function editEquipment(itemId) {
+            // For now, redirect to a simple edit form
+            // In a full implementation, you'd show a modal or redirect to an edit page
+            const newName = prompt('Enter new equipment name:');
+            if (newName && newName.trim() !== '') {
+                // Create a form and submit it
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.innerHTML = `
+                    <input type="hidden" name="action" value="edit_equipment">
+                    <input type="hidden" name="item_id" value="${itemId}">
+                    <input type="hidden" name="item_name" value="${newName.trim()}">
+                    <input type="hidden" name="category_id" value="1">
+                    <input type="hidden" name="item_description" value="Updated equipment">
+                    <input type="hidden" name="standard_price" value="0">
+                    <input type="hidden" name="unit_type" value="piece">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function deleteEquipment(itemId, itemName) {
+            if (confirm(`Are you sure you want to delete "${itemName}"? This action cannot be undone.`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.innerHTML = `
+                    <input type="hidden" name="action" value="delete_equipment">
+                    <input type="hidden" name="item_id" value="${itemId}">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function editPackage(packageId) {
+            // For now, redirect to a simple edit form
+            const newName = prompt('Enter new package name:');
+            if (newName && newName.trim() !== '') {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.innerHTML = `
+                    <input type="hidden" name="action" value="edit_package">
+                    <input type="hidden" name="package_id" value="${packageId}">
+                    <input type="hidden" name="package_name" value="${newName.trim()}">
+                    <input type="hidden" name="package_description" value="Updated package">
+                    <input type="hidden" name="discount_percentage" value="0">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function deletePackage(packageId, packageName) {
+            if (confirm(`Are you sure you want to delete package "${packageName}"? This action cannot be undone.`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.innerHTML = `
+                    <input type="hidden" name="action" value="delete_package">
+                    <input type="hidden" name="package_id" value="${packageId}">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
     </script>
 </body>
 </html>
+

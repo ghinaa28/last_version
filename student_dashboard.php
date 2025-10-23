@@ -516,12 +516,6 @@ $top_instructors = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
       <a href="my_applications.php" class="btn">View Applications</a>
     </div>
 
-    <div class="service-card">
-      <div class="icon">👤</div>
-      <h3>Update Profile</h3>
-      <p>Keep your profile information and CV up to date for better opportunities.</p>
-      <button class="btn" onclick="showMessage('Profile editing feature coming soon!')">Edit Profile</button>
-    </div>
 
     <div class="service-card">
       <div class="icon">🏆</div>

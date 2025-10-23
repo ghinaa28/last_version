@@ -526,6 +526,8 @@ $rating_stats = $stmt->get_result()->fetch_assoc();
     <div class="user-info">
       <nav>
         <a href="instructor_profile.php">My Profile</a>
+        <a href="manage_courses.php">My Courses</a>
+        <a href="browse_places_instructor.php">Browse Places</a>
         <a href="#students">My Students</a>
       </nav>
       <a href="logout.php" class="logout-btn">Logout</a>
@@ -581,6 +583,80 @@ $rating_stats = $stmt->get_result()->fetch_assoc();
       <h3>Communication</h3>
       <p>Communicate with students, companies, and other instructors.</p>
       <button class="btn" onclick="showMessage('Messaging system coming soon!')">View Messages</button>
+    </div>
+  </section>
+
+  <!-- Course Management Section -->
+  <section class="services" id="courses">
+    <div class="section-header">
+      <div class="section-icon">📚</div>
+      <div class="section-content">
+        <h2 class="section-title">Course Management</h2>
+        <p class="section-subtitle">Create and manage your own courses for students to enroll</p>
+      </div>
+    </div>
+    
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">➕</div>
+        <div class="card-badge">Create</div>
+      </div>
+      <h3>Add New Course</h3>
+      <p>Create a new course and publish it for students to discover and enroll</p>
+      <a href="add_course.php" class="btn modern-btn">
+        <span>Create Course</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📊</div>
+        <div class="card-badge">Manage</div>
+      </div>
+      <h3>Manage Courses</h3>
+      <p>View, edit, and manage all your courses and track student enrollments</p>
+      <a href="manage_courses.php" class="btn modern-btn">
+        <span>Manage Courses</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- Places & Venues Section -->
+  <section class="services" id="places">
+    <div class="section-header">
+      <div class="section-icon">🏢</div>
+      <div class="section-content">
+        <h2 class="section-title">Places & Venues</h2>
+        <p class="section-subtitle">Browse and apply for places posted by companies</p>
+      </div>
+    </div>
+    
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">🔍</div>
+        <div class="card-badge">Browse</div>
+      </div>
+      <h3>Browse Places</h3>
+      <p>Find and explore places posted by companies for training, workshops, or events</p>
+      <a href="browse_places_instructor.php" class="btn modern-btn">
+        <span>Browse Places</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📋</div>
+        <div class="card-badge">Track</div>
+      </div>
+      <h3>My Applications</h3>
+      <p>Track your applications for places and manage your venue requests</p>
+      <a href="my_place_applications.php" class="btn modern-btn">
+        <span>View Applications</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
     </div>
   </section>
 

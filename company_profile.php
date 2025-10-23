@@ -546,10 +546,16 @@ if ($locations_result && $locations_result->num_rows > 0) {
 
             <div class="main-content">
                 <div class="info-section">
-                    <h3 class="section-title">
-                        <i class="fas fa-building"></i>
-                        Company Information
-                    </h3>
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-building"></i>
+                            Company Information
+                        </h3>
+                        <a href="company_update_profile.php" class="btn btn-primary">
+                            <i class="fas fa-edit"></i>
+                            Update Profile
+                        </a>
+                    </div>
                     <div class="info-grid">
                         <div class="info-item">
                             <span class="info-label">Company Name</span>

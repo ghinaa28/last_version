@@ -369,6 +369,17 @@ try {
             border: 1px solid rgba(14, 165, 168, 0.3);
         }
 
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header .section-title {
+            margin-bottom: 0;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -385,6 +396,12 @@ try {
 
             .stats-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
             }
         }
     </style>
@@ -430,10 +447,16 @@ try {
 
             <div class="main-content">
                 <div class="info-section">
-                    <h3 class="section-title">
-                        <i class="fas fa-user"></i>
-                        Personal Information
-                    </h3>
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-user"></i>
+                            Personal Information
+                        </h3>
+                        <a href="instructor_update_profile.php" class="btn btn-primary">
+                            <i class="fas fa-edit"></i>
+                            Update Profile
+                        </a>
+                    </div>
                     <div class="info-grid">
                         <div class="info-item">
                             <span class="info-label">Full Name</span>
