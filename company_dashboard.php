@@ -338,6 +338,111 @@ $stats = $stmt->get_result()->fetch_assoc();
     transform: translateX(4px);
   }
 
+  /* Modern Card Styles */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .section-icon {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-content {
+    flex: 1;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .modern-card {
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+  }
+
+  .modern-card:hover {
+    border-color: var(--brand);
+    box-shadow: 0 20px 40px rgba(14, 165, 168, 0.15);
+    transform: translateY(-8px);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .modern-icon {
+    font-size: 2rem;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .card-badge {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .modern-btn {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .modern-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(14, 165, 168, 0.3);
+    color: white;
+  }
+
+  .modern-btn i {
+    transition: transform 0.3s ease;
+  }
+
+  .modern-btn:hover i {
+    transform: translateX(4px);
+  }
+
   .icon { font-size: 28px; margin-bottom: 14px; color: var(--brand); display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; background:rgba(14,165,168,0.12); box-shadow: inset 0 0 0 2px rgba(14,165,168,0.15); }
   .service-card h3 { font-size: 1.15rem; margin-bottom: 8px; color: var(--ink); font-weight: 800; }
   .service-card p { color: var(--muted); font-size: 0.98rem; margin-bottom: 16px; }
@@ -521,82 +626,110 @@ $stats = $stmt->get_result()->fetch_assoc();
 
 
 
+  <!-- Internship Management Section -->
   <section class="services" id="internships">
-    <div class="service-card">
-      <div class="icon">📝</div>
-      <h3>Post New Internship</h3>
-      <p>Create and publish new internship opportunities to attract talented students.</p>
-      <a href="post_internship.php" class="btn">Post Internship</a>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">📋</div>
-      <h3>Manage Internships</h3>
-      <p>View, edit, and manage your posted internship opportunities and track applications.</p>
-      <a href="manage_internships.php" class="btn">Manage Internships</a>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">🏢</div>
-      <h3>Post a Place</h3>
-      <p>Showcase your available spaces for other companies to book and use.</p>
-      <a href="post_place.php" class="btn">Post Place</a>
+    <div class="section-header">
+      <div class="section-icon">🎓</div>
+      <div class="section-content">
+        <h2 class="section-title">Internship Management</h2>
+        <p class="section-subtitle">Create and manage internship opportunities for students</p>
+      </div>
     </div>
     
-    <div class="service-card">
-      <div class="icon">👥</div>
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📝</div>
+        <div class="card-badge">Create</div>
+      </div>
+      <h3>Post New Internship</h3>
+      <p>Create and publish new internship opportunities to attract talented students</p>
+      <a href="post_internship.php" class="btn modern-btn">
+        <span>Post Internship</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📋</div>
+        <div class="card-badge">Manage</div>
+      </div>
+      <h3>Manage Internships</h3>
+      <p>View, edit, and manage your posted internship opportunities and track applications</p>
+      <a href="manage_internships.php" class="btn modern-btn">
+        <span>Manage Internships</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">👥</div>
+        <div class="card-badge">Review</div>
+      </div>
       <h3>Manage Applications</h3>
-      <p>Review, shortlist, and manage student applications for your internships.</p>
-      <a href="manage_applications.php" class="btn">View Applications</a>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">🔍</div>
-      <h3>Browse Places</h3>
-      <p>Find and book places from other companies for your events and meetings.</p>
-      <a href="browse_places.php" class="btn">Browse Places</a>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">🏢</div>
-      <h3>Manage Places</h3>
-      <p>Manage your posted places, view bookings, and track performance.</p>
-      <a href="manage_places.php" class="btn">Manage Places</a>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">📊</div>
-      <h3>Analytics & Reports</h3>
-      <p>Track your internship performance and application metrics.</p>
-      <a href="#analytics" class="btn">View Analytics</a>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">⭐</div>
-      <h3>Evaluate Instructors</h3>
-      <p>Review and rate instructors who have applied to your teaching opportunities.</p>
-      <a href="evaluate_instructors.php" class="btn">Evaluate Instructors</a>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">🏢</div>
-      <h3>Evaluate Places</h3>
-      <p>Review and rate places you have booked from other companies.</p>
-      <a href="evaluate_places.php" class="btn">Evaluate Places</a>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">🏆</div>
-      <h3>Manage Certificates</h3>
-      <p>Issue professional certificates to students who complete courses with your company.</p>
-      <a href="manage_certificates.php" class="btn">Manage Certificates</a>
+      <p>Review, shortlist, and manage student applications for your internships</p>
+      <a href="manage_applications.php" class="btn modern-btn">
+        <span>View Applications</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
     </div>
   </section>
 
-  <!-- Modern Instructor Service Section -->
-  <section class="services" id="instructors">
+  <!-- Venue Management Section -->
+  <section class="services" id="venues">
     <div class="section-header">
-      <div class="section-icon">🎓</div>
+      <div class="section-icon">🏢</div>
+      <div class="section-content">
+        <h2 class="section-title">Venue Management</h2>
+        <p class="section-subtitle">Manage your spaces and discover venues from other companies</p>
+      </div>
+    </div>
+    
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">🏢</div>
+        <div class="card-badge">Post</div>
+      </div>
+      <h3>Post a Place</h3>
+      <p>Showcase your available spaces for other companies to book and use</p>
+      <a href="post_place.php" class="btn modern-btn">
+        <span>Post Place</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">🔍</div>
+        <div class="card-badge">Browse</div>
+      </div>
+      <h3>Browse Places</h3>
+      <p>Find and book places from other companies for your events and meetings</p>
+      <a href="browse_places.php" class="btn modern-btn">
+        <span>Browse Places</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📊</div>
+        <div class="card-badge">Manage</div>
+      </div>
+      <h3>Manage Places</h3>
+      <p>Manage your posted places, view bookings, and track performance</p>
+      <a href="manage_places.php" class="btn modern-btn">
+        <span>Manage Places</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- Teaching Solutions Section -->
+  <section class="services" id="teaching">
+    <div class="section-header">
+      <div class="section-icon">👨‍🏫</div>
       <div class="section-content">
         <h2 class="section-title">Teaching Solutions</h2>
         <p class="section-subtitle">Connect with expert instructors for your training needs</p>
@@ -605,8 +738,8 @@ $stats = $stmt->get_result()->fetch_assoc();
     
     <div class="service-card modern-card">
       <div class="card-header">
-        <div class="icon modern-icon">👨‍🏫</div>
-        <div class="card-badge">New</div>
+        <div class="icon modern-icon">📝</div>
+        <div class="card-badge">Request</div>
       </div>
       <h3>Post Teaching Request</h3>
       <p>Find qualified instructors for your courses and training programs</p>
@@ -629,6 +762,70 @@ $stats = $stmt->get_result()->fetch_assoc();
       </a>
     </div>
   </section>
+
+  <!-- Evaluation & Analytics Section -->
+  <section class="services" id="evaluation">
+    <div class="section-header">
+      <div class="section-icon">⭐</div>
+      <div class="section-content">
+        <h2 class="section-title">Evaluation & Analytics</h2>
+        <p class="section-subtitle">Review performance and track your company's impact</p>
+      </div>
+    </div>
+    
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">⭐</div>
+        <div class="card-badge">Review</div>
+      </div>
+      <h3>Evaluate Instructors</h3>
+      <p>Review and rate instructors who have applied to your teaching opportunities</p>
+      <a href="evaluate_instructors.php" class="btn modern-btn">
+        <span>Evaluate Instructors</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">🏢</div>
+        <div class="card-badge">Rate</div>
+      </div>
+      <h3>Evaluate Places</h3>
+      <p>Review and rate places you have booked from other companies</p>
+      <a href="evaluate_places.php" class="btn modern-btn">
+        <span>Evaluate Places</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📊</div>
+        <div class="card-badge">Analytics</div>
+      </div>
+      <h3>Analytics & Reports</h3>
+      <p>Track your internship performance and application metrics</p>
+      <a href="#analytics" class="btn modern-btn">
+        <span>View Analytics</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">🏆</div>
+        <div class="card-badge">Certify</div>
+      </div>
+      <h3>Manage Certificates</h3>
+      <p>Issue professional certificates to students who complete courses with your company</p>
+      <a href="manage_certificates.php" class="btn modern-btn">
+        <span>Manage Certificates</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </section>
+
 
 
   <!-- Analytics Section -->

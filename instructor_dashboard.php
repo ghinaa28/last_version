@@ -542,47 +542,53 @@ $rating_stats = $stmt->get_result()->fetch_assoc();
   </section>
 
 
+  <!-- Student Management Section -->
   <section class="services" id="students">
-    <div class="service-card">
-      <div class="icon">👥</div>
+    <div class="section-header">
+      <div class="section-icon">👥</div>
+      <div class="section-content">
+        <h2 class="section-title">Student Management</h2>
+        <p class="section-subtitle">Guide and support your students throughout their journey</p>
+      </div>
+    </div>
+    
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">👥</div>
+        <div class="card-badge">Manage</div>
+      </div>
       <h3>My Students</h3>
-      <p>View and manage students under your supervision and their internship progress.</p>
-      <button class="btn" onclick="showMessage('Student management feature coming soon!')">View Students</button>
+      <p>View and manage students under your supervision and their internship progress</p>
+      <a href="my_students.php" class="btn modern-btn">
+        <span>View Students</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
     </div>
 
-    <div class="service-card">
-      <div class="icon">📝</div>
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📝</div>
+        <div class="card-badge">Review</div>
+      </div>
       <h3>Internship Applications</h3>
-      <p>Review and approve student internship applications and recommendations.</p>
-      <button class="btn" onclick="showMessage('Application review feature coming soon!')">Review Applications</button>
+      <p>Review and approve student internship applications and recommendations</p>
+      <a href="review_applications.php" class="btn modern-btn">
+        <span>Review Applications</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
     </div>
 
-    <div class="service-card">
-      <div class="icon">📊</div>
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📊</div>
+        <div class="card-badge">Track</div>
+      </div>
       <h3>Progress Reports</h3>
-      <p>Track student progress and generate reports for academic evaluation.</p>
-      <button class="btn" onclick="showMessage('Progress tracking feature coming soon!')">View Reports</button>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">🏢</div>
-      <h3>Company Relations</h3>
-      <p>Connect with companies and establish partnerships for student internships.</p>
-      <button class="btn" onclick="showMessage('Company networking feature coming soon!')">Connect</button>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">📚</div>
-      <h3>Training Materials</h3>
-      <p>Access and share training materials and resources with your students.</p>
-      <button class="btn" onclick="showMessage('Resource library coming soon!')">Browse Resources</button>
-    </div>
-
-    <div class="service-card">
-      <div class="icon">💬</div>
-      <h3>Communication</h3>
-      <p>Communicate with students, companies, and other instructors.</p>
-      <button class="btn" onclick="showMessage('Messaging system coming soon!')">View Messages</button>
+      <p>Track student progress and generate reports for academic evaluation</p>
+      <a href="progress_reports.php" class="btn modern-btn">
+        <span>View Reports</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
     </div>
   </section>
 
@@ -660,7 +666,57 @@ $rating_stats = $stmt->get_result()->fetch_assoc();
     </div>
   </section>
 
-  <!-- Modern Teaching Opportunities Section -->
+  <!-- Professional Development Section -->
+  <section class="services" id="development">
+    <div class="section-header">
+      <div class="section-icon">💼</div>
+      <div class="section-content">
+        <h2 class="section-title">Professional Development</h2>
+        <p class="section-subtitle">Build your professional network and enhance your skills</p>
+      </div>
+    </div>
+    
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">🏢</div>
+        <div class="card-badge">Connect</div>
+      </div>
+      <h3>Company Relations</h3>
+      <p>Connect with companies and establish partnerships for student internships</p>
+      <button class="btn modern-btn" onclick="showMessage('Company networking feature coming soon!')">
+        <span>Connect</span>
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📚</div>
+        <div class="card-badge">Resources</div>
+      </div>
+      <h3>Training Materials</h3>
+      <p>Access and share training materials and resources with your students</p>
+      <button class="btn modern-btn" onclick="showMessage('Resource library coming soon!')">
+        <span>Browse Resources</span>
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">💬</div>
+        <div class="card-badge">Communicate</div>
+      </div>
+      <h3>Communication</h3>
+      <p>Communicate with students, companies, and other instructors</p>
+      <button class="btn modern-btn" onclick="showMessage('Messaging system coming soon!')">
+        <span>View Messages</span>
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- Teaching Opportunities Section -->
   <section class="services" id="opportunities">
     <div class="section-header">
       <div class="section-icon">🎯</div>

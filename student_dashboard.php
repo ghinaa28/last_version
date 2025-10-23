@@ -199,6 +199,111 @@ $top_instructors = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
   .service-card:hover { transform: translateY(-6px); box-shadow: 0 16px 32px rgba(2,6,23,0.08); }
   .service-card:hover::before { width:100%; }
 
+  /* Modern Card Styles */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .section-icon {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-content {
+    flex: 1;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .modern-card {
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+  }
+
+  .modern-card:hover {
+    border-color: var(--brand);
+    box-shadow: 0 20px 40px rgba(14, 165, 168, 0.15);
+    transform: translateY(-8px);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .modern-icon {
+    font-size: 2rem;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .card-badge {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .modern-btn {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .modern-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(14, 165, 168, 0.3);
+    color: white;
+  }
+
+  .modern-btn i {
+    transition: transform 0.3s ease;
+  }
+
+  .modern-btn:hover i {
+    transform: translateX(4px);
+  }
+
   .icon { font-size: 28px; margin-bottom: 14px; color: var(--brand); display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; background:rgba(14,165,168,0.12); box-shadow: inset 0 0 0 2px rgba(14,165,168,0.15); }
   .service-card h3 { font-size: 1.15rem; margin-bottom: 8px; color: var(--ink); font-weight: 800; }
   .service-card p { color: var(--muted); font-size: 0.98rem; margin-bottom: 16px; }
@@ -501,30 +606,115 @@ $top_instructors = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
   </section>
 
 
+  <!-- Internship Management Section -->
   <section class="services" id="internships">
-    <div class="service-card">
-      <div class="icon">🎓</div>
+    <div class="section-header">
+      <div class="section-icon">🎓</div>
+      <div class="section-content">
+        <h2 class="section-title">Internship Management</h2>
+        <p class="section-subtitle">Discover and apply for internship opportunities</p>
+      </div>
+    </div>
+    
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">🔍</div>
+        <div class="card-badge">Browse</div>
+      </div>
       <h3>Browse Internships</h3>
-      <p>Explore available internship opportunities that match your field of study and interests.</p>
-      <a href="browse_internships.php" class="btn">Browse Now</a>
+      <p>Explore available internship opportunities that match your field of study and interests</p>
+      <a href="browse_internships.php" class="btn modern-btn">
+        <span>Browse Now</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
     </div>
 
-    <div class="service-card">
-      <div class="icon">📝</div>
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📝</div>
+        <div class="card-badge">Track</div>
+      </div>
       <h3>My Applications</h3>
-      <p>Track your internship applications and their current status.</p>
-      <a href="my_applications.php" class="btn">View Applications</a>
+      <p>Track your internship applications and their current status</p>
+      <a href="my_applications.php" class="btn modern-btn">
+        <span>View Applications</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- Course Learning Section -->
+  <section class="services" id="courses">
+    <div class="section-header">
+      <div class="section-icon">📚</div>
+      <div class="section-content">
+        <h2 class="section-title">Course Learning</h2>
+        <p class="section-subtitle">Discover and enroll in courses created by expert instructors</p>
+      </div>
+    </div>
+    
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">🔍</div>
+        <div class="card-badge">Browse</div>
+      </div>
+      <h3>Browse Courses</h3>
+      <p>Discover courses created by expert instructors and enhance your skills</p>
+      <a href="browse_courses.php" class="btn modern-btn">
+        <span>Browse Courses</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
     </div>
 
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📝</div>
+        <div class="card-badge">Track</div>
+      </div>
+      <h3>My Courses</h3>
+      <p>View and manage your enrolled courses and track your progress</p>
+      <a href="my_courses.php" class="btn modern-btn">
+        <span>View My Courses</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </section>
 
-    <div class="service-card">
-      <div class="icon">🏆</div>
+  <!-- Professional Development Section -->
+  <section class="services" id="development">
+    <div class="section-header">
+      <div class="section-icon">🏆</div>
+      <div class="section-content">
+        <h2 class="section-title">Professional Development</h2>
+        <p class="section-subtitle">Build your professional profile and skills</p>
+      </div>
+    </div>
+    
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">🏆</div>
+        <div class="card-badge">Achieve</div>
+      </div>
       <h3>My Certificates</h3>
-      <p>View and download your professional certificates from completed courses.</p>
-      <a href="my_certificates.php" class="btn">View Certificates</a>
+      <p>View and download your professional certificates from completed courses</p>
+      <a href="my_certificates.php" class="btn modern-btn">
+        <span>View Certificates</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
     </div>
 
-   
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">💼</div>
+        <div class="card-badge">Connect</div>
+      </div>
+      <h3>Contact Companies</h3>
+      <p>Connect with companies and explore collaboration opportunities</p>
+      <a href="contact_company.php" class="btn modern-btn">
+        <span>Start Networking</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
   </section>
 
   <!-- Instructor Evaluations Section -->
