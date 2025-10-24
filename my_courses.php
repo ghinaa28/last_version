@@ -392,6 +392,44 @@ $enrollments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             font-size: 0.9rem;
         }
 
+        .progress-section {
+            margin-bottom: 1rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .progress-percentage {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--brand);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--brand), var(--brand-2));
+            border-radius: var(--radius-sm);
+            transition: width 0.3s ease;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -472,6 +510,16 @@ $enrollments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                             <div class="detail-item">
                                 <div class="detail-label">Type</div>
                                 <div class="detail-value"><?php echo $enrollment['is_online'] ? 'Online' : 'In-Person'; ?></div>
+                            </div>
+                        </div>
+
+                        <div class="progress-section">
+                            <div class="progress-header">
+                                <span class="progress-label">Progress</span>
+                                <span class="progress-percentage"><?php echo $enrollment['progress_percentage'] ?? 0; ?>%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: <?php echo $enrollment['progress_percentage'] ?? 0; ?>%"></div>
                             </div>
                         </div>
 

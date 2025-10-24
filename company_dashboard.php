@@ -626,6 +626,43 @@ $stats = $stmt->get_result()->fetch_assoc();
 
 
 
+  <!-- Course Management Section -->
+  <section class="services" id="courses">
+    <div class="section-header">
+      <div class="section-icon">📚</div>
+      <div class="section-content">
+        <h2 class="section-title">Course Management</h2>
+        <p class="section-subtitle">Create and manage training courses for students and employees</p>
+      </div>
+    </div>
+    
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">➕</div>
+        <div class="card-badge">Create</div>
+      </div>
+      <h3>Create Course</h3>
+      <p>Create new training courses and educational programs for students and employees</p>
+      <a href="company_add_course.php" class="btn modern-btn">
+        <span>Create Course</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="service-card modern-card">
+      <div class="card-header">
+        <div class="icon modern-icon">📊</div>
+        <div class="card-badge">Manage</div>
+      </div>
+      <h3>Manage Courses</h3>
+      <p>View, edit, and manage all your company's training courses and programs</p>
+      <a href="company_manage_courses.php" class="btn modern-btn">
+        <span>Manage Courses</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </section>
+
   <!-- Internship Management Section -->
   <section class="services" id="internships">
     <div class="section-header">

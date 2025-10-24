@@ -57,7 +57,7 @@ if ($course['max_students'] > 0) {
 }
 
 // Enroll student in course
-$stmt = $conn->prepare("INSERT INTO course_enrollments (course_id, student_id, enrollment_date, status) VALUES (?, ?, NOW(), 'enrolled')");
+$stmt = $conn->prepare("INSERT INTO course_enrollments (course_id, student_id, enrollment_date, status, progress_percentage) VALUES (?, ?, NOW(), 'enrolled', 0)");
 $stmt->bind_param("ii", $course_id, $student_id);
 
 if ($stmt->execute()) {
